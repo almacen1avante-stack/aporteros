@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Aporte {
+  id         Int      @id @default(autoincrement())
+  numero     Int      @unique
+  nombres    String
+  apellidos  String
+  cedula     String
+  banco      String
+  referencia String
+  fecha      String
+  mes        String
+  aporte     Float
+  createdAt  DateTime @default(now())
+}
