@@ -1,36 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const integranteId = searchParams.get("integranteId");
 
-  const where = integranteId ? { integranteId: parseInt(integranteId) } : {};
+  let query = supabase
+    .from("Aporte")
+    .select("*, integrante:Integrante(*)")
+    .order("createdAt", { ascending: false });
 
-  const aportes = await prisma.aporte.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: { integrante: true },
-  });
+  if (integranteId) query = query.eq("integranteId", parseInt(integranteId));
 
-  return NextResponse.json(aportes);
+  const { data, error } = await query;
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data ?? []);
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { integranteId, banco, referencia, fecha, mes, aporte } = body;
 
-  const nuevoAporte = await prisma.aporte.create({
-    data: {
+  const { data, error } = await supabase
+    .from("Aporte")
+    .insert({
       integranteId: parseInt(integranteId),
       banco,
       referencia,
       fecha,
       mes,
       aporte: parseFloat(aporte),
-    },
-    include: { integrante: true },
-  });
+    })
+    .select("*, integrante:Integrante(*)")
+    .single();
 
-  return NextResponse.json(nuevoAporte, { status: 201 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data, { status: 201 });
 }
