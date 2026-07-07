@@ -7,16 +7,23 @@ datasource db {
   provider = "postgresql"
 }
 
+model Integrante {
+  id        Int      @id @default(autoincrement())
+  numero    Int      @unique
+  nombres   String
+  apellidos String
+  cedula    String
+  aportes   Aporte[]
+}
+
 model Aporte {
-  id         Int      @id @default(autoincrement())
-  numero     Int      @unique
-  nombres    String
-  apellidos  String
-  cedula     String
-  banco      String
-  referencia String
-  fecha      String
-  mes        String
-  aporte     Float
-  createdAt  DateTime @default(now())
+  id           Int        @id @default(autoincrement())
+  integrante   Integrante @relation(fields: [integranteId], references: [id])
+  integranteId Int
+  banco        String
+  referencia   String
+  fecha        String
+  mes          String
+  aporte       Float
+  createdAt    DateTime   @default(now())
 }
